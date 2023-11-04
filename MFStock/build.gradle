@@ -1,0 +1,67 @@
+plugins {
+    id 'com.android.application'
+}
+
+ext.VERSION_MAGOR = 0
+ext.VERSION_MINOR = 1
+ext.VERSION_BUILD = 0
+
+android {
+//    * Outdated *
+//    compileSdkVersion 33
+//    buildToolsVersion "33.0.1"
+
+    compileSdk = 33
+    buildToolsVersion = "33.0.1"
+
+    defaultConfig {
+        applicationId "ru.alemakave.mfstock"
+        minSdkVersion 19
+        targetSdkVersion 33
+        versionCode ((VERSION_MAGOR << 8) + (VERSION_MINOR << 4) + VERSION_BUILD)
+        versionName String.format("%d.%d.%d-ALPHA", VERSION_MAGOR, VERSION_MINOR, VERSION_BUILD)
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("C:\\Users\\Alemakave\\keystore.jks")
+            storePassword System.getenv("KSTOREPWD")
+            keyAlias "key0"
+            keyPassword System.getenv("KEYPWD")
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            manifestPlaceholders = [ appName: "MFStock Debug" ]
+        }
+        release {
+            minifyEnabled false
+            manifestPlaceholders = [ appName: "MFStock" ]
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.6.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.9.0'
+
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.10.5"
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.10.5"
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.10.5"
+
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="scanned">Просканировано</string>
+    <string name="scanned_not_found">Просканированное не найдено</string>
+    <string name="print_sticker"></string>
+    <string name="print_sticker_message">Какую распечатать наклейку по следующим данным?</string>
+    <string name="nomenclature_sticker">Наклейка с номенклатурой</string>
+    <string name="serial_number_sticker">Наклейка с СНИ</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+</resources>

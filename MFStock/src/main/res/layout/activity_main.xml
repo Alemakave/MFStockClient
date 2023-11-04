@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:context=".MainActivity"
+        android:padding="5dp"
+        android:orientation="vertical"
+        android:id="@+id/main_layout"
+        android:background="#000">
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/applicationInfoTextView"/>
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+            <LinearLayout android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical"
+                          android:id="@+id/infoView">
+            </LinearLayout>
+    </ScrollView>
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:ems="10"
+            android:id="@+id/inputBox"
+            android:layout_weight="0"
+            android:inputType="textMultiLine"
+            android:hint="Scan text"
+            style="@style/MFStock.Widget.EditText"/>
+</LinearLayout>

@@ -1,0 +1,44 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.MFStock" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_200</item>
+<!--        <item name="colorPrimaryVariant">@color/purple_700</item>-->
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="MFStock.Widget.Button" parent="Widget.AppCompat.Button">
+        <item name="android:background">#151515</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="MFStock.Widget.EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:color">@color/white</item>
+        <item name="android:background">#202020</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="Theme.MFStock.Widget.AlertDialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:color">@color/white</item>
+        <item name="android:background">#202020</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
+    </style>
+
+    <style name="Theme.MFStock.Dark" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="buttonStyle">@style/MFStock.Widget.Button</item>
+        <item name="editTextStyle">@style/MFStock.Widget.EditText</item>
+<!--        <item name="android:background">#000</item>-->
+<!--        <item name="android:textColor">@color/white</item>-->
+    </style>
+</resources>

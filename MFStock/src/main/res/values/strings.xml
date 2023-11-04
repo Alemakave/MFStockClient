@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name" translatable="false">MFStock</string>
+    <string name="scanned">Scanned</string>
+    <string name="scanned_not_found">Scanned not found</string>
+    <string name="print_sticker"></string>
+    <string name="print_sticker_message">Which sticker to print according to the following data?</string>
+    <string name="nomenclature_sticker">Nomenclature sticker</string>
+    <string name="serial_number_sticker">Serial number sticker</string>
+    <string name="cancel">Cancel</string>
+    <string name="application_info" translatable="false">MFStock v%s%s\nDB date: %s</string>
+    <string name="save">Save</string>
+</resources>
