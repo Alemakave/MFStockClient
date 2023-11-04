@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (BuildConfig.VERSION_CODE >= 6) {
                 String scanData = scanDataBuffer.substring(1, scanDataBuffer.length() - 1);
-                String strUrl = String.format("http://%s:%s/%s=%s",
+                String strUrl = String.format("http://%s:%s/%s?searchString=%s",
                         settings.ip,
                         settings.port,
                         Commands.FIND_FROM_SCAN,
