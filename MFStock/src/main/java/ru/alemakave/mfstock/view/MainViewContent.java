@@ -19,8 +19,8 @@ public class MainViewContent implements IViewContent {
         EditText inputBox = mainActivity.findViewById(R.id.inputBox);
         inputBox.requestFocus();
 
-        appInfoView.setTextSize(mainActivity.getSettings().fontSize);
-        inputBox.setTextSize(mainActivity.getSettings().fontSize);
+        appInfoView.setTextSize(mainActivity.getSettings().getFontSize());
+        inputBox.setTextSize(mainActivity.getSettings().getFontSize());
 
         inputBox.setOnKeyListener((v, keyCode, event) -> {
             String inputData = inputBox.getText().toString().trim().replaceAll("\n", "");

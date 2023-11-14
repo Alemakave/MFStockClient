@@ -12,7 +12,6 @@ import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.OkHttpClient;
 import ru.alemakave.android.utils.Logger;
 import ru.alemakave.mfstock.commands.Commands;
 import ru.alemakave.mfstock.model.json.DateTimeJson;
@@ -24,7 +23,6 @@ import ru.alemakave.xlsx_parser.SheetData;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import static ru.alemakave.mfstock.utils.TextUtils.*;
 
@@ -111,21 +109,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void onScan(String scanStr) {
         try {
-            if (!scanStr.isEmpty()) {
-                clearInfoTexView();
-                scanDataBuffer = scanStr;
-            }
-            if (scanStr.length() < 2) {
+            LinearLayout foundedInfoView = findViewById(R.id.infoView);
+            if (scanStr == null || scanStr.isEmpty() || scanStr.length() < 2) {
                 return;
             }
+
+            clearInfoTexView();
+            scanDataBuffer = scanStr;
 
             TextView appInfoView = findViewById(R.id.applicationInfoTextView);
 
             if (BuildConfig.VERSION_CODE >= 6) {
                 String scanData = scanDataBuffer.substring(1, scanDataBuffer.length() - 1);
                 String strUrl = String.format("http://%s:%s/%s?searchString=%s",
-                        settings.ip,
-                        settings.port,
+                        settings.getIp(),
+                        settings.getPort(),
                         Commands.FIND_FROM_SCAN,
                         scanData.replaceAll("#", "%23")
                 );
@@ -138,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
                 if (sheetData.rows.size() == 1) {
                     appendToTextView(appInfoView, String.format("%s", getString(R.string.scanned_not_found)), Color.RED);
                 } else {
-                    LinearLayout foundedInfoView = findViewById(R.id.infoView);
-
                     for (int i = 1; i < sheetData.rows.size(); i++) {
                         for (int j = 0; j < sheetData.rows.get(0).cells.size(); j++) {
                             infoData.append(sheetData.rows.get(0).getCell(j).toString())
@@ -149,13 +145,6 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         TextView infoTextView = new TextView(this);
-                        StringBuilder finalizedInfoData = infoData;
-                        infoTextView.setOnLongClickListener(v -> {
-                            showPrintStickerDialog(finalizedInfoData.toString());
-
-                            return true;
-                        });
-
                         foundedInfoView.addView(infoTextView);
                         Space spacer = new Space(this);
                         spacer.setMinimumHeight(30);
@@ -184,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         appInfoView.setText("");
         foundedInfoView.removeAllViews();
 
-        String strUrl = String.format("http://%s:%s/%s", settings.ip, settings.port, Commands.GET_DB_DATE);
+        String strUrl = String.format("http://%s:%s/%s", settings.getIp(), settings.getPort(), Commands.GET_DB_DATE);
 
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -192,32 +181,8 @@ public class MainActivity extends AppCompatActivity {
 
             String text = getString(R.string.application_info, BuildConfig.VERSION_NAME, BuildConfig.DEBUG ? " (Debug)" : "", dbDate.getDateTimeString());
             appendToTextView(appInfoView, text, Color.rgb(128, 192, 0));
-        } catch (Exception ignore) {}
-    }
-
-    private void showPrintStickerDialog(String dialogContent) {
-        /*
-        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Theme_MFStock_Widget_AlertDialog))
-                .setPositiveButton(getString(R.string.nomenclature_sticker), (dialog, which) -> printNomenclatureSticker(url, dialogContent))
-                .setNegativeButton(getString(R.string.serial_number_sticker), (dialog, which) -> printSerialNumberSticker(dialogContent))
-                .setNeutralButton(getString(R.string.cancel), null)
-                .setTitle(getString(R.string.print_sticker))
-                .setMessage(getString(R.string.print_sticker_message) + "\n\n" + dialogContent)
-                .create()
-                .show();*/
-    }
-
-    private void printNomenclatureSticker(String url, String data) {
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(20000, TimeUnit.MILLISECONDS)
-                .readTimeout(20000, TimeUnit.MILLISECONDS)
-                .writeTimeout(20000, TimeUnit.MILLISECONDS)
-                .build();
-
-        Logger.e(this, "printNomenclatureSticker", "Not implemented yet"); //TODO
-    }
-
-    private void printSerialNumberSticker(String data) {
-        Logger.e(this, "printSerialNumberSticker", "Not implemented yet"); //TODO
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
