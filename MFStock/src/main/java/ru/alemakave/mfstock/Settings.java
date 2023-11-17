@@ -14,6 +14,7 @@ public class Settings {
     private String ip = "127.0.0.1";
     private int port = 9090;
     private int fontSize = 12;
+    private int checkConnectionTimeout = 5000;
 
     private Settings(AppCompatActivity activity) {
         preferences = activity.getSharedPreferences("settings", Context.MODE_PRIVATE);
@@ -29,6 +30,10 @@ public class Settings {
 
     public int getFontSize() {
         return fontSize;
+    }
+
+    public int getCheckConnectionTimeout() {
+        return checkConnectionTimeout;
     }
 
     public void setIp(String ip) {
@@ -49,6 +54,10 @@ public class Settings {
 
     public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
+    }
+
+    public void setCheckConnectionTimeout(int checkConnectionTimeout) {
+        this.checkConnectionTimeout = checkConnectionTimeout;
     }
 
     public void loadSettings() {

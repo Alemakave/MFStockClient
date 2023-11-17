@@ -13,26 +13,36 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.alemakave.android.utils.Logger;
-import ru.alemakave.mfstock.commands.Commands;
+import ru.alemakave.mfstock.commands.HttpCommands;
+import ru.alemakave.mfstock.model.json.CachedData;
 import ru.alemakave.mfstock.model.json.DateTimeJson;
 import ru.alemakave.mfstock.utils.HttpUtils;
+import ru.alemakave.mfstock.utils.NetworkUtils;
 import ru.alemakave.mfstock.view.IViewContent;
 import ru.alemakave.mfstock.view.MainViewContent;
 import ru.alemakave.mfstock.view.SettingsViewContent;
+import ru.alemakave.xlsx_parser.SheetCell;
 import ru.alemakave.xlsx_parser.SheetData;
+import ru.alemakave.xlsx_parser.SheetRow;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static ru.alemakave.mfstock.utils.TextUtils.*;
 
 public class MainActivity extends AppCompatActivity {
     private final ArrayList<Integer> contentViewTree = new ArrayList<>();
     private Settings settings;
-    private String scanDataBuffer = "";
 
     private final IViewContent mainViewContent = new MainViewContent();
     private final IViewContent settingsViewContent = new SettingsViewContent();
+    private HashMap<String, CachedData> cachedData = new HashMap<>();
+    private String nomCodeScannedBarcode = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
             settings = Settings.getSettings(this);
             settings.loadSettings();
             clearInfoTexView();
+            try {
+                loadCaches();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             mainViewContent.draw(this);
         }
@@ -102,9 +117,15 @@ public class MainActivity extends AppCompatActivity {
         if (contentViewTree.size() > 0) {
             setContentView(contentViewTree.get(contentViewTree.size() - 1));
             contentViewTree.remove(contentViewTree.size() - 1);
-        } else {
-            onScan(scanDataBuffer);
         }
+    }
+
+    public HashMap<String, CachedData> getCachedData() {
+        return cachedData;
+    }
+
+    public String getNomCodeScannedBarcode() {
+        return nomCodeScannedBarcode;
     }
 
     public void onScan(String scanStr) {
@@ -115,21 +136,24 @@ public class MainActivity extends AppCompatActivity {
             }
 
             clearInfoTexView();
-            scanDataBuffer = scanStr;
 
             TextView appInfoView = findViewById(R.id.applicationInfoTextView);
 
             if (BuildConfig.VERSION_CODE >= 6) {
-                String scanData = scanDataBuffer.substring(1, scanDataBuffer.length() - 1);
-                String strUrl = String.format("http://%s:%s/%s?searchString=%s",
-                        settings.getIp(),
-                        settings.getPort(),
-                        Commands.FIND_FROM_SCAN,
-                        scanData.replaceAll("#", "%23")
-                );
+                String scanData = scanStr.substring(1, scanStr.length() - 1);
+                scanData = scanData.trim();
 
-                ObjectMapper mapper = new ObjectMapper();
-                SheetData sheetData = mapper.readValue(HttpUtils.callAndWait(this, strUrl).getBytes(StandardCharsets.UTF_8), SheetData.class);
+                SheetData sheetData = getDataFromScan(scanData);
+
+                if (sheetData == null) {
+                    appendToTextView(appInfoView, "Not connected", Color.RED);
+                    return;
+                }
+
+                int nomCodeIndex = sheetData.rows.get(0).cells.indexOf(new SheetCell("Номенклатурный код"));
+                if (nomCodeIndex > 0 && sheetData.rows.size() > 1) {
+                    nomCodeScannedBarcode = sheetData.rows.get(1).cells.get(nomCodeIndex).toString();
+                }
 
                 appendToTextView(appInfoView, String.format("%s: %s", getString(R.string.scanned), scanData), Color.rgb(160, 160, 0));
                 StringBuilder infoData = new StringBuilder();
@@ -162,6 +186,44 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public SheetData getDataFromScan(String scanData) throws IOException, InterruptedException {
+        for (String file : cachedData.keySet()) {
+            if (checkConnection()
+                    && cachedData.get(file).getDateTime().equals(getDBData().toString())) {
+                break;
+            }
+
+            SheetData sheetData = cachedData.get(file).getData();
+
+            for (SheetRow row : sheetData.rows) {
+                if (row.toString().contains(scanData)) {
+                    return sheetData;
+                }
+            }
+        }
+
+        if (!checkConnection()) {
+            return null;
+        }
+
+        String strUrl = String.format("http://%s:%s/%s?searchString=%s",
+                settings.getIp(),
+                settings.getPort(),
+                HttpCommands.FIND_FROM_SCAN,
+                scanData.replaceAll("#", "%23")
+        );
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        return mapper.readValue(HttpUtils.callAndWait(this, strUrl).getBytes(StandardCharsets.UTF_8), SheetData.class);
+    }
+
+    public DateTimeJson getDBData() throws IOException {
+        String strUrl = String.format("http://%s:%s/%s", settings.getIp(), settings.getPort(), HttpCommands.GET_DB_DATE);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(HttpUtils.callAndWait(this, strUrl).getBytes(StandardCharsets.UTF_8), DateTimeJson.class);
+    }
+
     public Settings getSettings() {
         return settings;
     }
@@ -172,17 +234,40 @@ public class MainActivity extends AppCompatActivity {
 
         appInfoView.setText("");
         foundedInfoView.removeAllViews();
-
-        String strUrl = String.format("http://%s:%s/%s", settings.getIp(), settings.getPort(), Commands.GET_DB_DATE);
+        nomCodeScannedBarcode = "";
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            DateTimeJson dbDate = mapper.readValue(HttpUtils.callAndWait(this, strUrl).getBytes(StandardCharsets.UTF_8), DateTimeJson.class);
-
-            String text = getString(R.string.application_info, BuildConfig.VERSION_NAME, BuildConfig.DEBUG ? " (Debug)" : "", dbDate.getDateTimeString());
+            String date;
+            if (checkConnection()) {
+                date = getDBData().getDateTimeString();
+            } else {
+                date = "Not connected";
+            }
+            String text = getString(R.string.application_info, BuildConfig.VERSION_NAME, BuildConfig.DEBUG ? " (Debug)" : "", date);
             appendToTextView(appInfoView, text, Color.rgb(128, 192, 0));
+            mainViewContent.draw(this);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public boolean checkConnection() {
+        return NetworkUtils.checkConnection(this, settings.getIp() + ":" + settings.getPort(), settings.getCheckConnectionTimeout());
+    }
+
+    public void loadCaches() throws IOException {
+        for (File file : getFilesDir().listFiles()) {
+            if (!file.getName().endsWith(".json")) {
+                continue;
+            }
+
+            String fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writerWithDefaultPrettyPrinter();
+            System.out.printf("fileName \"%s\": %s\n", fileName, new BufferedReader(new FileReader(file)).readLine().replaceAll("\\{", "\n{"));
+            CachedData cacheData = mapper.readValue(file, CachedData.class);
+            cachedData.put(fileName, cacheData);
         }
     }
 }

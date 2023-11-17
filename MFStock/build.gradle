@@ -4,7 +4,7 @@ plugins {
 
 ext.VERSION_MAGOR = 0
 ext.VERSION_MINOR = 1
-ext.VERSION_BUILD = 0
+ext.VERSION_BUILD = 2
 
 android {
 //    * Outdated *

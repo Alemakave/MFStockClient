@@ -5,6 +5,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 @JsonAutoDetect(
         fieldVisibility = JsonAutoDetect.Visibility.PUBLIC_ONLY,
@@ -36,6 +37,24 @@ public class SheetRow {
         }
 
         return new SheetRow(workbook, cells);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SheetRow)) return false;
+
+        SheetRow sheetRow = (SheetRow) o;
+
+        if (!Objects.equals(workbook, sheetRow.workbook)) return false;
+        return Objects.equals(cells, sheetRow.cells);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = workbook != null ? workbook.hashCode() : 0;
+        result = 31 * result + (cells != null ? cells.hashCode() : 0);
+        return result;
     }
 
     @Override

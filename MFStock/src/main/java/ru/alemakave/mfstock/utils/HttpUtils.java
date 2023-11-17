@@ -7,7 +7,6 @@ import okhttp3.Response;
 import ru.alemakave.android.utils.Logger;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class HttpUtils {
@@ -54,9 +53,5 @@ public class HttpUtils {
         }
 
         return runnable.responseData.get();
-    }
-
-    public static String callAndWaitJSon(final Context context, String url, Map<String, String> json) {
-        return null;
     }
 }
