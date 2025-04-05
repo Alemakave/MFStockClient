@@ -9,8 +9,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
+
+import lombok.Getter;
 import ru.alemakave.mfstock.R;
 
+@Getter
 public class HeadedTextBox extends LinearLayout {
     private TextView header;
     private EditText input;
@@ -28,7 +31,7 @@ public class HeadedTextBox extends LinearLayout {
 
         setOrientation(VERTICAL);
         setPadding(10,5,10,5);
-        setBackgroundColor(Color.rgb(32, 32, 32));;
+        setBackgroundColor(Color.rgb(32, 32, 32));
 
         header = new TextView(context);
         header.setText("Empty Header");
@@ -61,13 +64,5 @@ public class HeadedTextBox extends LinearLayout {
                 input.setText(attributes.getString(attr));
             }
         }
-    }
-
-    public TextView getHeader() {
-        return header;
-    }
-
-    public EditText getInput() {
-        return input;
     }
 }
