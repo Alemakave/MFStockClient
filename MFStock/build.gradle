@@ -4,15 +4,13 @@ plugins {
 
 ext.VERSION_MAGOR = 0
 ext.VERSION_MINOR = 1
-ext.VERSION_BUILD = 2
+ext.VERSION_BUILD = 3
 
 android {
-//    * Outdated *
-//    compileSdkVersion 33
-//    buildToolsVersion "33.0.1"
+    namespace = "ru.alemakave.mfstock"
+    compileSdk 34
 
-    compileSdk = 33
-    buildToolsVersion = "33.0.1"
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId "ru.alemakave.mfstock"
@@ -26,7 +24,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("C:\\Users\\Alemakave\\keystore.jks")
+            storeFile file("keystore.jks")
             storePassword System.getenv("KSTOREPWD")
             keyAlias "key0"
             keyPassword System.getenv("KEYPWD")
@@ -60,6 +58,9 @@ dependencies {
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.10.5"
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.10.5"
     implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.10.5"
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

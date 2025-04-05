@@ -3,6 +3,9 @@ package ru.alemakave.mfstock;
 import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatActivity;
+
+import lombok.Getter;
+import lombok.Setter;
 import ru.alemakave.mfstock.exception.IncorrectArgumentException;
 
 import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectIp;
@@ -11,29 +14,25 @@ import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectPort;
 public class Settings {
     private static Settings instance = null;
     private final SharedPreferences preferences;
+    @Getter
     private String ip = "127.0.0.1";
+    @Getter
     private int port = 9090;
+    @Getter
+    @Setter
     private int fontSize = 12;
+    @Getter
+    @Setter
     private int checkConnectionTimeout = 5000;
+    @Getter
+    @Setter
+    private String username;
+    @Getter
+    @Setter
+    private String password;
 
     private Settings(AppCompatActivity activity) {
         preferences = activity.getSharedPreferences("settings", Context.MODE_PRIVATE);
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public int getFontSize() {
-        return fontSize;
-    }
-
-    public int getCheckConnectionTimeout() {
-        return checkConnectionTimeout;
     }
 
     public void setIp(String ip) {
@@ -52,14 +51,6 @@ public class Settings {
         this.port = port;
     }
 
-    public void setFontSize(int fontSize) {
-        this.fontSize = fontSize;
-    }
-
-    public void setCheckConnectionTimeout(int checkConnectionTimeout) {
-        this.checkConnectionTimeout = checkConnectionTimeout;
-    }
-
     public void loadSettings() {
         boolean isUpdateConfigFile = false;
 
@@ -72,6 +63,9 @@ public class Settings {
             port = preferences.getInt("Port", port);
         }
 
+        username = preferences.getString("Username", "");
+        password = preferences.getString("Password", "");
+
         fontSize = preferences.getInt("FontSize", fontSize);
 
         if (isUpdateConfigFile) {
@@ -80,12 +74,19 @@ public class Settings {
     }
 
     public void saveSettings() {
-        preferences.edit().putString("IP", ip).putInt("Port", port).putInt("FontSize", fontSize).apply();
+        preferences.edit()
+                .putString("IP", ip)
+                .putInt("Port", port)
+                .putInt("FontSize", fontSize)
+                .putString("Username", username)
+                .putString("Password", password)
+                .apply();
     }
 
     public static Settings getSettings(AppCompatActivity activity) {
-        if (instance == null)
+        if (instance == null) {
             instance = new Settings(activity);
+        }
 
         return instance;
     }

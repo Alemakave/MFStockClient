@@ -15,7 +15,7 @@
               android:id="@+id/applicationInfoTextView"/>
     <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1">
             <LinearLayout android:layout_width="match_parent"
                           android:layout_height="wrap_content"
@@ -24,18 +24,33 @@
             </LinearLayout>
     </ScrollView>
     <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:id="@+id/commandView">
-    </LinearLayout>
-    <EditText
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:ems="10"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
             android:id="@+id/inputBox"
-            android:layout_weight="0"
-            android:inputType="textMultiLine"
+            style="@style/MFStock.Widget.EditText"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:gravity="left|center_vertical"
             android:hint="Scan text"
-            style="@style/MFStock.Widget.EditText"/>
+            android:inputType="text"
+            android:lines="1"
+            android:maxLines="1"
+            android:singleLine="true" />
+
+        <ImageButton
+            style="@style/MFStock.Widget.ImageButton"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="end"
+            android:layout_marginStart="5dp"
+            android:contentDescription="Settings"
+            android:onClick="onClickSettingsButton"
+            android:src="@mipmap/ic_settings"
+            tools:src="@mipmap/ic_settings" />
+    </LinearLayout>
+
 </LinearLayout>

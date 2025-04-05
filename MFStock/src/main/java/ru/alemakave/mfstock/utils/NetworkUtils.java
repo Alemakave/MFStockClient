@@ -7,6 +7,8 @@ import android.net.*;
 import java.net.URL;
 import java.net.URLConnection;
 
+import static ru.alemakave.mfstock.utils.ConnectionStatus.*;
+
 public final class NetworkUtils {
     public static boolean isCorrectIp(String ip) {
         try {
@@ -38,6 +40,7 @@ public final class NetworkUtils {
         }
     }
 
+    @Deprecated
     public static boolean checkConnection(Activity activity, String address, int timeout) {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -79,5 +82,57 @@ public final class NetworkUtils {
         }
 
         return isConnected;
+    }
+
+    public static ConnectionStatus tryConnect(Activity activity, String address, int timeout) {
+        return tryConnect(activity, address, timeout, null, null);
+    }
+
+    public static ConnectionStatus tryConnect(Activity activity, String address, int timeout, String username, String password) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (connectivityManager == null) {
+            return NOT_CONNECTED_TO_NETWORK;
+        }
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+
+        if (activeNetwork == null) {
+            return NOT_CONNECTED_TO_NETWORK;
+        }
+
+        try {
+            final Exception[] exception = {null};
+
+            ResponseRunnable runnable = new ResponseRunnable() {
+                @Override
+                public void run() {
+                    try {
+                        URL url = new URL(String.format("http://%s/", address));
+                        URLConnection connection = url.openConnection();
+                        connection.setConnectTimeout(timeout);
+                        connection.setReadTimeout(timeout);
+                        connection.connect();
+                    } catch (Exception e) {
+                        exception[0] = e;
+                    }
+                }
+            };
+
+            Thread thread = new Thread(runnable);
+            thread.start();
+
+            while (thread.isAlive())
+                ;
+
+            if (exception[0] != null) {
+                throw exception[0];
+            }
+        } catch (Exception e) {
+            return CONNECTION_ERROR;
+        }
+
+        return CONNECTED;
     }
 }

@@ -20,6 +20,8 @@ public class SettingsViewContent implements IViewContent {
         HeadedTextBox portHeadedTextBox = mainActivity.findViewById(R.id.port_input);
         HeadedTextBox fontSizeHeadedTextBox = mainActivity.findViewById(R.id.font_size_input);
         HeadedTextBox checkConnectionTimeoutHeadedTextBox = mainActivity.findViewById(R.id.check_connection_timeout_input);
+        HeadedTextBox usernameHeadedTextBot = mainActivity.findViewById(R.id.username_input);
+        HeadedTextBox passwordHeadedTextBot = mainActivity.findViewById(R.id.password_input);
 
         Button saveButton = mainActivity.findViewById(R.id.save_settings_button);
 
@@ -27,6 +29,8 @@ public class SettingsViewContent implements IViewContent {
         portHeadedTextBox.getInput().setText(Integer.toString(mainActivity.getSettings().getPort()));
         fontSizeHeadedTextBox.getInput().setText(Integer.toString(mainActivity.getSettings().getFontSize()));
         checkConnectionTimeoutHeadedTextBox.getInput().setText(Integer.toString(mainActivity.getSettings().getCheckConnectionTimeout()));
+        usernameHeadedTextBot.getInput().setText(mainActivity.getSettings().getUsername());
+        passwordHeadedTextBot.getInput().setText(mainActivity.getSettings().getPassword());
 
         ipHeadedTextBox.getInput().setOnKeyListener((view, keyCode, keyEvent) -> {
             if (keyCode == KeyEvent.KEYCODE_ENTER) {
@@ -74,6 +78,8 @@ public class SettingsViewContent implements IViewContent {
             String portInputText = portHeadedTextBox.getInput().getText().toString();
             String fontSizeInputText = fontSizeHeadedTextBox.getInput().getText().toString();
             String timeoutInputText = checkConnectionTimeoutHeadedTextBox.getInput().getText().toString();
+            String usernameInputText = usernameHeadedTextBot.getInput().getText().toString();
+            String passwordInputText = passwordHeadedTextBot.getInput().getText().toString();
 
             if (portInputText.matches("^[0-9]+$")
                     && fontSizeInputText.matches("^[0-9]+$")
@@ -87,6 +93,8 @@ public class SettingsViewContent implements IViewContent {
                     mainActivity.getSettings().setPort(port);
                     mainActivity.getSettings().setFontSize(fontSize);
                     mainActivity.getSettings().setCheckConnectionTimeout(timeout);
+                    mainActivity.getSettings().setUsername(usernameInputText);
+                    mainActivity.getSettings().setPassword(passwordInputText);
                     mainActivity.getSettings().saveSettings();
                     mainActivity.setContentView(R.layout.activity_main);
                 }

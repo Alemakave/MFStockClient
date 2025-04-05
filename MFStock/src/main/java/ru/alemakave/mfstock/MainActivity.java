@@ -8,14 +8,24 @@ import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.*;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.Getter;
+import okhttp3.Response;
 import ru.alemakave.android.utils.Logger;
 import ru.alemakave.mfstock.commands.HttpCommands;
-import ru.alemakave.mfstock.model.json.CachedData;
+import ru.alemakave.mfstock.elements.ContextMenusItem;
+import ru.alemakave.mfstock.elements.ScanInfoTextView;
+import ru.alemakave.mfstock.elements.contextMenu.ContextMenuCallerInfo;
 import ru.alemakave.mfstock.model.json.DateTimeJson;
+import ru.alemakave.mfstock.utils.ConnectionStatus;
 import ru.alemakave.mfstock.utils.HttpUtils;
 import ru.alemakave.mfstock.utils.NetworkUtils;
 import ru.alemakave.mfstock.view.IViewContent;
@@ -23,25 +33,21 @@ import ru.alemakave.mfstock.view.MainViewContent;
 import ru.alemakave.mfstock.view.SettingsViewContent;
 import ru.alemakave.xlsx_parser.SheetCell;
 import ru.alemakave.xlsx_parser.SheetData;
-import ru.alemakave.xlsx_parser.SheetRow;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static ru.alemakave.mfstock.utils.TextUtils.*;
 
 public class MainActivity extends AppCompatActivity {
     private final ArrayList<Integer> contentViewTree = new ArrayList<>();
+    @Getter
     private Settings settings;
 
     private final IViewContent mainViewContent = new MainViewContent();
     private final IViewContent settingsViewContent = new SettingsViewContent();
-    private HashMap<String, CachedData> cachedData = new HashMap<>();
+    @Getter
     private String nomCodeScannedBarcode = null;
 
     @Override
@@ -60,11 +66,6 @@ public class MainActivity extends AppCompatActivity {
             settings = Settings.getSettings(this);
             settings.loadSettings();
             clearInfoTexView();
-            try {
-                loadCaches();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
 
             mainViewContent.draw(this);
         }
@@ -114,24 +115,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (contentViewTree.size() > 0) {
+        if (!contentViewTree.isEmpty()) {
             setContentView(contentViewTree.get(contentViewTree.size() - 1));
             contentViewTree.remove(contentViewTree.size() - 1);
         }
     }
 
-    public HashMap<String, CachedData> getCachedData() {
-        return cachedData;
-    }
-
-    public String getNomCodeScannedBarcode() {
-        return nomCodeScannedBarcode;
-    }
-
-    public void onScan(String scanStr) {
+    public void onScan(String scanData) {
         try {
             LinearLayout foundedInfoView = findViewById(R.id.infoView);
-            if (scanStr == null || scanStr.isEmpty() || scanStr.length() < 2) {
+            if (scanData == null || scanData.isEmpty()) {
                 return;
             }
 
@@ -140,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
             TextView appInfoView = findViewById(R.id.applicationInfoTextView);
 
             if (BuildConfig.VERSION_CODE >= 6) {
-                String scanData = scanStr.substring(1, scanStr.length() - 1);
                 scanData = scanData.trim();
 
                 SheetData sheetData = getDataFromScan(scanData);
@@ -168,13 +160,14 @@ public class MainActivity extends AppCompatActivity {
                                     .append("\n");
                         }
 
-                        TextView infoTextView = new TextView(this);
+                        ScanInfoTextView infoTextView = new ScanInfoTextView(this);
                         foundedInfoView.addView(infoTextView);
                         Space spacer = new Space(this);
                         spacer.setMinimumHeight(30);
                         foundedInfoView.addView(spacer);
 
                         appendToTextView(infoTextView, infoData.toString());
+                        infoTextView.updateContextMenu();
                         infoData = new StringBuilder();
                     }
 
@@ -186,22 +179,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public SheetData getDataFromScan(String scanData) throws IOException, InterruptedException {
-        for (String file : cachedData.keySet()) {
-            if (checkConnection()
-                    && cachedData.get(file).getDateTime().equals(getDBData().toString())) {
-                break;
-            }
-
-            SheetData sheetData = cachedData.get(file).getData();
-
-            for (SheetRow row : sheetData.rows) {
-                if (row.toString().contains(scanData)) {
-                    return sheetData;
-                }
-            }
-        }
-
+    public SheetData getDataFromScan(String scanData) throws IOException {
         if (!checkConnection()) {
             return null;
         }
@@ -215,17 +193,26 @@ public class MainActivity extends AppCompatActivity {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        return mapper.readValue(HttpUtils.callAndWait(this, strUrl).getBytes(StandardCharsets.UTF_8), SheetData.class);
+        Response response = HttpUtils.callAndWait(this, strUrl);
+
+        if (!response.isSuccessful()) {
+            return null;
+        }
+
+        return mapper.readValue(response.body().string().getBytes(StandardCharsets.UTF_8), SheetData.class);
     }
 
     public DateTimeJson getDBData() throws IOException {
         String strUrl = String.format("http://%s:%s/%s", settings.getIp(), settings.getPort(), HttpCommands.GET_DB_DATE);
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(HttpUtils.callAndWait(this, strUrl).getBytes(StandardCharsets.UTF_8), DateTimeJson.class);
-    }
 
-    public Settings getSettings() {
-        return settings;
+        Response response = HttpUtils.callAndWait(this, strUrl);
+
+        if (!response.isSuccessful()) {
+            return null;
+        }
+
+        return mapper.readValue(response.body().string().getBytes(StandardCharsets.UTF_8), DateTimeJson.class);
     }
 
     public void clearInfoTexView()  {
@@ -239,7 +226,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             String date;
             if (checkConnection()) {
-                date = getDBData().getDateTimeString();
+                DateTimeJson dateTimeJson = getDBData();
+                if (dateTimeJson == null) {
+                    date = "Connection error";
+                } else {
+                    date = getDBData().getDateTimeString();
+                }
             } else {
                 date = "Not connected";
             }
@@ -251,23 +243,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Deprecated
     public boolean checkConnection() {
-        return NetworkUtils.checkConnection(this, settings.getIp() + ":" + settings.getPort(), settings.getCheckConnectionTimeout());
+        return NetworkUtils.tryConnect(this, settings.getIp() + ":" + settings.getPort(), settings.getCheckConnectionTimeout()) == ConnectionStatus.CONNECTED;
     }
 
-    public void loadCaches() throws IOException {
-        for (File file : getFilesDir().listFiles()) {
-            if (!file.getName().endsWith(".json")) {
-                continue;
-            }
+    public void onClickSettingsButton(View view) {
+        setContentView(R.layout.settings_layout);
+    }
 
-            String fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
-
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writerWithDefaultPrettyPrinter();
-            System.out.printf("fileName \"%s\": %s\n", fileName, new BufferedReader(new FileReader(file)).readLine().replaceAll("\\{", "\n{"));
-            CachedData cacheData = mapper.readValue(file, CachedData.class);
-            cachedData.put(fileName, cacheData);
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if (item.getMenuInfo() == null) {
+            return super.onContextItemSelected(item);
         }
+
+        if (!(item.getMenuInfo() instanceof ContextMenuCallerInfo)) {
+            return super.onContextItemSelected(item);
+        }
+
+        if (!(((ContextMenuCallerInfo) item.getMenuInfo()).getCaller() instanceof ContextMenusItem)) {
+            return super.onContextItemSelected(item);
+        }
+
+        return ((ContextMenusItem) ((ContextMenuCallerInfo) item.getMenuInfo()).getCaller()).onContextItemSelected(item);
     }
 }

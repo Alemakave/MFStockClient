@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.text.InputFilter;
 import android.util.AttributeSet;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -54,16 +53,12 @@ public class HeadedTextBox extends LinearLayout {
         TypedArray attributes = context.getTheme().obtainStyledAttributes(attrs, R.styleable.HeadedTextBox, defStyleAttr, 0);
         for (int i = 0; i < attributes.getIndexCount(); i++) {
             int attr = attributes.getIndex(i);
-            switch (attr) {
-                case R.styleable.HeadedTextBox_header:
-                    header.setText(attributes.getString(attr));
-                    break;
-                case R.styleable.HeadedTextBox_textAlignment:
-                    header.setTextAlignment(attributes.getInt(R.styleable.HeadedTextBox_textAlignment, 0));
-                    break;
-                case R.styleable.HeadedTextBox_inputBarText:
-                    input.setText(attributes.getString(attr));
-                    break;
+            if (attr == R.styleable.HeadedTextBox_header) {
+                header.setText(attributes.getString(attr));
+            } else if (attr == R.styleable.HeadedTextBox_textAlignment) {
+                header.setTextAlignment(attributes.getInt(R.styleable.HeadedTextBox_textAlignment, 0));
+            } else if (attr == R.styleable.HeadedTextBox_inputBarText) {
+                input.setText(attributes.getString(attr));
             }
         }
     }

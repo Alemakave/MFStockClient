@@ -39,6 +39,24 @@
                     android:layout_height="20dp"
                     android:layout_weight="1"/>
             <ru.alemakave.mfstock.elements.HeadedTextBox
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/username_input"
+                app:header="Имя пользователя"/>
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_weight="1"/>
+            <ru.alemakave.mfstock.elements.HeadedTextBox
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/password_input"
+                app:header="Пароль"/>
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_weight="1"/>
+            <ru.alemakave.mfstock.elements.HeadedTextBox
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/font_size_input"
