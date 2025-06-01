@@ -5,11 +5,32 @@ import android.content.Context;
 import android.net.*;
 
 import java.net.URL;
-import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 import static ru.alemakave.mfstock.utils.ConnectionStatus.*;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 public final class NetworkUtils {
+    public static boolean isCorrectHost(String host) {
+        String hostProtocol;
+
+        if (host.startsWith("http://")) {
+            hostProtocol = "http";
+        } else if (host.startsWith("https://")) {
+            hostProtocol = "https";
+        } else {
+            hostProtocol = "ip";
+        }
+
+        if (host.startsWith(hostProtocol)) {
+            String hostWithoutProtocol = host.substring(hostProtocol.length() + 3);
+            return !hostWithoutProtocol.contains(":");
+        } else {
+            return isCorrectIp(host);
+        }
+    }
+
     public static boolean isCorrectIp(String ip) {
         try {
             boolean isCorrected = true;
@@ -40,50 +61,6 @@ public final class NetworkUtils {
         }
     }
 
-    @Deprecated
-    public static boolean checkConnection(Activity activity, String address, int timeout) {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        boolean isConnected = false;
-        if (connectivityManager != null) {
-            NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-            isConnected = (activeNetwork != null) && (activeNetwork.isConnectedOrConnecting());
-            try {
-                final Exception[] exception = {null};
-
-                ResponseRunnable runnable = new ResponseRunnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            URL url = new URL(String.format("http://%s/", address));
-                            URLConnection connection = url.openConnection();
-                            connection.setConnectTimeout(timeout);
-                            connection.setReadTimeout(timeout);
-                            connection.connect();
-                        } catch (Exception e) {
-                            exception[0] = e;
-                        }
-                    }
-                };
-
-                Thread thread = new Thread(runnable);
-                thread.start();
-
-                while (thread.isAlive())
-                    ;
-
-                if (exception[0] != null) {
-                    throw exception[0];
-                }
-            } catch (Exception e) {
-                isConnected = false;
-            }
-        }
-
-        return isConnected;
-    }
-
     public static ConnectionStatus tryConnect(Activity activity, String address, int timeout) {
         return tryConnect(activity, address, timeout, null, null);
     }
@@ -109,11 +86,14 @@ public final class NetworkUtils {
                 @Override
                 public void run() {
                     try {
-                        URL url = new URL(String.format("http://%s/", address));
-                        URLConnection connection = url.openConnection();
-                        connection.setConnectTimeout(timeout);
-                        connection.setReadTimeout(timeout);
-                        connection.connect();
+                        URL url = new URL(String.format("%s", address));
+                        OkHttpClient client = NetworkUtils.getClientBuilder(timeout, TimeUnit.MILLISECONDS)
+                                .build();
+                        Request request = new Request.Builder()
+                                .url(url)
+                                .build();
+
+                        client.newCall(request);
                     } catch (Exception e) {
                         exception[0] = e;
                     }
@@ -134,5 +114,15 @@ public final class NetworkUtils {
         }
 
         return CONNECTED;
+    }
+
+    public static OkHttpClient.Builder getClientBuilder(int timeout, TimeUnit timeUnit) {
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+
+        clientBuilder.connectTimeout(timeout, timeUnit);
+        clientBuilder.writeTimeout(timeout, timeUnit);
+        clientBuilder.readTimeout(timeout, timeUnit);
+
+        return clientBuilder;
     }
 }

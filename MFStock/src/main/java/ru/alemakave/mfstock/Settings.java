@@ -8,14 +8,13 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.alemakave.mfstock.exception.IncorrectArgumentException;
 
-import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectIp;
+import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectHost;
 import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectPort;
 
 public class Settings {
     private static Settings instance = null;
     private final SharedPreferences preferences;
-    @Getter
-    private String ip = "127.0.0.1";
+    private String host = "127.0.0.1";
     @Getter
     private int port = 9090;
     @Getter
@@ -35,12 +34,20 @@ public class Settings {
         preferences = activity.getSharedPreferences("settings", Context.MODE_PRIVATE);
     }
 
-    public void setIp(String ip) {
-        if (!isCorrectIp(ip)) {
-            throw new IncorrectArgumentException("Port is incorrect!");
+    public String getHost() {
+        if (host.startsWith("http://") || host.startsWith("https")) {
+            return host;
+        } else {
+            return host;
+        }
+    }
+
+    public void setHost(String host) {
+        if (!isCorrectHost(host)) {
+            throw new IncorrectArgumentException("Host is incorrect!");
         }
 
-        this.ip = ip;
+        this.host = host;
     }
 
     public void setPort(int port) {
@@ -54,7 +61,7 @@ public class Settings {
     public void loadSettings() {
         boolean isUpdateConfigFile = false;
 
-        ip = preferences.getString("IP", ip);
+        host = preferences.getString("IP", host);
 
         if (preferences.contains("Port") && preferences.getAll().get("Port") instanceof String) {
             port = Integer.parseInt(preferences.getString("Port", Integer.toString(port)));
@@ -75,7 +82,7 @@ public class Settings {
 
     public void saveSettings() {
         preferences.edit()
-                .putString("IP", ip)
+                .putString("IP", host)
                 .putInt("Port", port)
                 .putInt("FontSize", fontSize)
                 .putString("Username", username)

@@ -1,5 +1,6 @@
 package ru.alemakave.mfstock.view;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.view.KeyEvent;
 import android.widget.Button;
@@ -7,12 +8,13 @@ import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import ru.alemakave.mfstock.MainActivity;
 import ru.alemakave.mfstock.R;
-import ru.alemakave.mfstock.elements.HeadedTextBox;
+import ru.alemakave.mfstock.view.elements.HeadedTextBox;
 
-import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectIp;
+import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectHost;
 import static ru.alemakave.mfstock.utils.NetworkUtils.isCorrectPort;
 
 public class SettingsViewContent implements IViewContent {
+    @SuppressLint("SetTextI18n")
     @Override
     public void draw(AppCompatActivity activity) {
         MainActivity mainActivity = (MainActivity) activity;
@@ -25,7 +27,7 @@ public class SettingsViewContent implements IViewContent {
 
         Button saveButton = mainActivity.findViewById(R.id.save_settings_button);
 
-        ipHeadedTextBox.getInput().setText(mainActivity.getSettings().getIp());
+        ipHeadedTextBox.getInput().setText(mainActivity.getSettings().getHost());
         portHeadedTextBox.getInput().setText(Integer.toString(mainActivity.getSettings().getPort()));
         fontSizeHeadedTextBox.getInput().setText(Integer.toString(mainActivity.getSettings().getFontSize()));
         checkConnectionTimeoutHeadedTextBox.getInput().setText(Integer.toString(mainActivity.getSettings().getCheckConnectionTimeout()));
@@ -37,11 +39,21 @@ public class SettingsViewContent implements IViewContent {
                 return true;
             }
 
-            EditText ipInput = ((EditText) view);
-            if (!isCorrectIp(ipInput.getText().toString())) {
-                ipInput.setTextColor(Color.RED);
+            EditText hostInput = ((EditText) view);
+            if (!isCorrectHost(hostInput.getText().toString())) {
+                hostInput.setTextColor(Color.RED);
             } else {
-                ipInput.setTextColor(-3618616);
+                hostInput.setTextColor(-3618616);
+
+                if (hostInput.getText().toString().startsWith("http://")) {
+                    portHeadedTextBox.getInput().setText("80");
+                    portHeadedTextBox.getInput().setEnabled(false);
+                } else if (hostInput.getText().toString().startsWith("https://")) {
+                    portHeadedTextBox.getInput().setText("443");
+                    portHeadedTextBox.getInput().setEnabled(false);
+                } else {
+                    portHeadedTextBox.getInput().setEnabled(true);
+                }
             }
             return false;
         });
@@ -74,7 +86,7 @@ public class SettingsViewContent implements IViewContent {
         });
 
         saveButton.setOnClickListener(v -> {
-            String ipInputText = ipHeadedTextBox.getInput().getText().toString();
+            String hostInputText = ipHeadedTextBox.getInput().getText().toString();
             String portInputText = portHeadedTextBox.getInput().getText().toString();
             String fontSizeInputText = fontSizeHeadedTextBox.getInput().getText().toString();
             String timeoutInputText = checkConnectionTimeoutHeadedTextBox.getInput().getText().toString();
@@ -88,8 +100,8 @@ public class SettingsViewContent implements IViewContent {
                 int fontSize = Integer.parseInt(fontSizeInputText);
                 int timeout = Integer.parseInt(timeoutInputText);
 
-                if (isCorrectIp(ipInputText) && isCorrectPort(port)) {
-                    mainActivity.getSettings().setIp(ipInputText);
+                if (isCorrectHost(hostInputText) && isCorrectPort(port)) {
+                    mainActivity.getSettings().setHost(hostInputText);
                     mainActivity.getSettings().setPort(port);
                     mainActivity.getSettings().setFontSize(fontSize);
                     mainActivity.getSettings().setCheckConnectionTimeout(timeout);

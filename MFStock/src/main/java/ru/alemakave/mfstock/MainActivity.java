@@ -1,6 +1,7 @@
 package ru.alemakave.mfstock;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.text.Spannable;
@@ -9,6 +10,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
@@ -21,9 +23,9 @@ import lombok.Getter;
 import okhttp3.Response;
 import ru.alemakave.android.utils.Logger;
 import ru.alemakave.mfstock.commands.HttpCommands;
-import ru.alemakave.mfstock.elements.ContextMenusItem;
-import ru.alemakave.mfstock.elements.ScanInfoTextView;
-import ru.alemakave.mfstock.elements.contextMenu.ContextMenuCallerInfo;
+import ru.alemakave.mfstock.view.elements.ContextMenusItem;
+import ru.alemakave.mfstock.view.elements.ScanInfoTextView;
+import ru.alemakave.mfstock.view.elements.contextMenu.ContextMenuCallerInfo;
 import ru.alemakave.mfstock.model.json.DateTimeJson;
 import ru.alemakave.mfstock.utils.ConnectionStatus;
 import ru.alemakave.mfstock.utils.HttpUtils;
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && BuildConfig.VERSION_CODE < 4) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && BuildInfo.VERSION_CODE < 4) {
             for (int i = 0; i < menu.size(); i++) {
                 MenuItem menuItem = menu.getItem(i);
 
@@ -132,13 +134,14 @@ public class MainActivity extends AppCompatActivity {
 
             TextView appInfoView = findViewById(R.id.applicationInfoTextView);
 
-            if (BuildConfig.VERSION_CODE >= 6) {
+            if (BuildInfo.VERSION_CODE >= 6) {
                 scanData = scanData.trim();
 
                 SheetData sheetData = getDataFromScan(scanData);
 
                 if (sheetData == null) {
-                    appendToTextView(appInfoView, "Not connected", Color.RED);
+                    appendToTextView(appInfoView, String.format("%s: %s", getString(R.string.scanned), scanData), Color.rgb(160, 160, 0));
+                    appendToTextView(appInfoView, getString(R.string.not_connected), Color.RED);
                     return;
                 }
 
@@ -171,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                         infoData = new StringBuilder();
                     }
 
-                    Logger.i("onScan", "Scan data: \n" + sheetData); //TODO: Localize
+                    Logger.i("onScan", getString(R.string.scanned) + ": \n" + sheetData);
                 }
             }
         } catch (Exception e) {
@@ -184,9 +187,17 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
-        String strUrl = String.format("http://%s:%s/%s?searchString=%s",
-                settings.getIp(),
-                settings.getPort(),
+        String baseUrl;
+        String host = settings.getHost();
+
+        if (host.startsWith("http://") || host.startsWith("https://")) {
+            baseUrl = host;
+        } else {
+            baseUrl = String.format("http://%s:%s", host, settings.getPort());
+        }
+
+        String strUrl = String.format("%s/%s?searchString=%s",
+                baseUrl,
                 HttpCommands.FIND_FROM_SCAN,
                 scanData.replaceAll("#", "%23")
         );
@@ -203,7 +214,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public DateTimeJson getDBData() throws IOException {
-        String strUrl = String.format("http://%s:%s/%s", settings.getIp(), settings.getPort(), HttpCommands.GET_DB_DATE);
+        String baseUrl;
+        String host = settings.getHost();
+        if (host.startsWith("http://") || host.startsWith("https://")) {
+            baseUrl = host;
+        } else {
+            baseUrl = String.format("http://%s:%s", host, settings.getPort());
+        }
+        String strUrl = String.format("%s/%s", baseUrl, HttpCommands.GET_DB_DATE);
         ObjectMapper mapper = new ObjectMapper();
 
         Response response = HttpUtils.callAndWait(this, strUrl);
@@ -223,19 +241,28 @@ public class MainActivity extends AppCompatActivity {
         foundedInfoView.removeAllViews();
         nomCodeScannedBarcode = "";
 
+        String baseUrl;
+        String host = settings.getHost();
+
+        if (host.startsWith("http://") || host.startsWith("https://")) {
+            baseUrl = host;
+        } else {
+            baseUrl = String.format("http://%s:%s", host, settings.getPort());
+        }
+
         try {
             String date;
             if (checkConnection()) {
                 DateTimeJson dateTimeJson = getDBData();
                 if (dateTimeJson == null) {
-                    date = "Connection error";
+                    date = getString(R.string.connection_error);
                 } else {
                     date = getDBData().getDateTimeString();
                 }
             } else {
-                date = "Not connected";
+                date = getString(R.string.not_connected);
             }
-            String text = getString(R.string.application_info, BuildConfig.VERSION_NAME, BuildConfig.DEBUG ? " (Debug)" : "", date);
+            String text = getString(R.string.application_info, BuildInfo.VERSION_NAME, BuildInfo.DEBUG ? " (Debug)" : "", date);
             appendToTextView(appInfoView, text, Color.rgb(128, 192, 0));
             mainViewContent.draw(this);
         } catch (Exception e) {
@@ -245,7 +272,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Deprecated
     public boolean checkConnection() {
-        return NetworkUtils.tryConnect(this, settings.getIp() + ":" + settings.getPort(), settings.getCheckConnectionTimeout()) == ConnectionStatus.CONNECTED;
+        String baseUrl;
+        String host = settings.getHost();
+
+        if (host.startsWith("http://") || host.startsWith("https://")) {
+            baseUrl = host;
+        } else {
+            baseUrl = String.format("http://%s:%s", host, settings.getPort());
+        }
+
+        return NetworkUtils.tryConnect(this, baseUrl, settings.getCheckConnectionTimeout()) == ConnectionStatus.CONNECTED;
     }
 
     public void onClickSettingsButton(View view) {
@@ -267,5 +303,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return ((ContextMenusItem) ((ContextMenuCallerInfo) item.getMenuInfo()).getCaller()).onContextItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ((InputMethodManager)this.getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
     }
 }

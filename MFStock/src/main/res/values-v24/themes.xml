@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MFStock.Dark" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="buttonStyle">@style/MFStock.Widget.Button</item>
+        <item name="editTextStyle">@style/MFStock.Widget.EditText</item>
+        <item name="android:textViewStyle">@style/MFStock.Widget.TextView</item>
+        <item name="android:contextPopupMenuStyle">@style/MFStock.TextAppearance.AppCompat.Menu</item>
+    </style>
+
+    <style name="MFStock.TextAppearance.AppCompat.Menu" parent="@style/Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">#202020</item>
+        <item name="android:overlapAnchor">true</item>
+    </style>
+</resources>

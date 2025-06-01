@@ -1,4 +1,4 @@
-package ru.alemakave.mfstock.elements;
+package ru.alemakave.mfstock.view.elements;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -16,7 +16,8 @@ import androidx.appcompat.widget.AppCompatTextView;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import ru.alemakave.mfstock.elements.contextMenu.ContextMenuCallerInfo;
+import ru.alemakave.mfstock.R;
+import ru.alemakave.mfstock.view.elements.contextMenu.ContextMenuCallerInfo;
 
 public class ScanInfoTextView extends AppCompatTextView implements ContextMenusItem {
     public static final Map<String, Integer> contextMenuIds = new LinkedHashMap<>();
@@ -54,10 +55,19 @@ public class ScanInfoTextView extends AppCompatTextView implements ContextMenusI
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         String[] scanInfoDataLines = getText().toString().split("\n");
-        String scanInfoDataLineValue = scanInfoDataLines[item.getItemId() - 100].split(": ")[1];
+        String[] scanInfoDataParts = scanInfoDataLines[item.getItemId() - 100].split(": ");
+
+        if (scanInfoDataParts.length == 1) {
+            Toast.makeText(getActivity(),
+                    getActivity().getString(R.string.copied_empty_error, scanInfoDataParts[0]).replaceAll("\\n", "\n"),
+                    Toast.LENGTH_LONG).show();
+            return true;
+        }
+
+        String scanInfoDataLineValue = scanInfoDataParts[1];
 
         ((ClipboardManager)getActivity().getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("", scanInfoDataLineValue));
-        Toast.makeText(getActivity(), scanInfoDataLines[item.getItemId() - 100] + " Скопировано!", Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), scanInfoDataLines[item.getItemId() - 100] + "\n" + getActivity().getString(R.string.copied), Toast.LENGTH_LONG).show();
 
         return true;
     }
