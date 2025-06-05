@@ -17,51 +17,55 @@
                       android:layout_height="wrap_content"
                       android:orientation="vertical"
                       android:padding="5dp">
-            <ru.alemakave.mfstock.elements.HeadedTextBox
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ip_input"
-                    app:header="IP Address"
-                    app:inputBarText="127.0.0.1">
-            </ru.alemakave.mfstock.elements.HeadedTextBox>
-            <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:layout_weight="1"/>
-            <ru.alemakave.mfstock.elements.HeadedTextBox
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/port_input"
-                    app:header="Port"
-                    app:inputBarText="9090"/>
-            <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:layout_weight="1"/>
-            <ru.alemakave.mfstock.elements.HeadedTextBox
+
+            <ru.alemakave.mfstock.view.elements.HeadedTextBox
+                android:id="@+id/ip_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:header="@string/host"
+                app:inputBarText="127.0.0.1"></ru.alemakave.mfstock.view.elements.HeadedTextBox>
+            <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_weight="1"/>
+
+            <ru.alemakave.mfstock.view.elements.HeadedTextBox
+                android:id="@+id/port_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:header="@string/port"
+                app:inputBarText="9090" />
+            <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_weight="1"/>
+
+            <ru.alemakave.mfstock.view.elements.HeadedTextBox
                 android:id="@+id/username_input"
-                app:header="Имя пользователя"/>
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="20dp"
-                android:layout_weight="1"/>
-            <ru.alemakave.mfstock.elements.HeadedTextBox
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/password_input"
-                app:header="Пароль"/>
+                app:header="@string/username" />
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
                 android:layout_weight="1"/>
-            <ru.alemakave.mfstock.elements.HeadedTextBox
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/font_size_input"
-                    app:header="Размер шрифта"
-                    app:inputBarText="12"/>
+
+            <ru.alemakave.mfstock.view.elements.HeadedTextBox
+                android:id="@+id/password_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:header="@string/password" />
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_weight="1"/>
+
+            <ru.alemakave.mfstock.view.elements.HeadedTextBox
+                android:id="@+id/font_size_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:header="@string/font_size"
+                app:inputBarText="12" />
             <Space
                     android:layout_width="wrap_content"
                     android:layout_height="20dp"/>
@@ -69,27 +73,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
-                <ru.alemakave.mfstock.elements.HeadedTextBox
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="50"
-                        app:header="Префикс"
-                        app:inputBarText="!" android:id="@+id/prefix_input"/>
+
+                <ru.alemakave.mfstock.view.elements.HeadedTextBox
+                    android:id="@+id/prefix_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="50"
+                    app:header="@string/preffix"
+                    app:inputBarText="!" />
                 <Space
                         android:layout_width="10dp"
                         android:layout_height="0dp"/>
-                <ru.alemakave.mfstock.elements.HeadedTextBox
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="50"
-                        app:header="Постфикс"
-                        app:inputBarText="\?" android:id="@+id/postfix_input"/>
+
+                <ru.alemakave.mfstock.view.elements.HeadedTextBox
+                    android:id="@+id/postfix_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="50"
+                    app:header="@string/suffix"
+                    app:inputBarText="\?" />
             </LinearLayout>
             <Space
                     android:layout_width="wrap_content"
                     android:layout_height="20dp"
                     android:layout_weight="1"/>
-            <ru.alemakave.mfstock.elements.HeadedTextBox
+            <ru.alemakave.mfstock.view.elements.HeadedTextBox
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/check_connection_timeout_input"

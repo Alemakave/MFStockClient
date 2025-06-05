@@ -14,15 +14,31 @@ import java.util.concurrent.TimeUnit;
 
 public class HttpUtils {
     public static Response callAndWait(final MainActivity context, String url) {
+        String host = null;
+
+        if (url.startsWith("http://")) {
+            host = url.substring("http://".length());
+        } else if (url.startsWith("https://")) {
+            host = url.substring("https://".length());
+        }
+
+        if (host != null) {
+            if (host.contains("/")) {
+                host = host.substring(0, host.indexOf('/'));
+            }
+
+            if (host.contains(":")) {
+                host = host.substring(0, host.indexOf(':'));
+            }
+        }
+
         final Exception[] exception = {null};
 
+        String finalHost = host;
         ResponseRunnable runnable = new ResponseRunnable() {
             @Override
             public void run() {
-                OkHttpClient client = new OkHttpClient.Builder()
-                        .connectTimeout(20000, TimeUnit.MILLISECONDS)
-                        .readTimeout(20000, TimeUnit.MILLISECONDS)
-                        .writeTimeout(20000, TimeUnit.MILLISECONDS)
+                OkHttpClient client = NetworkUtils.getClientBuilder(context.getSettings().getCheckConnectionTimeout(), TimeUnit.MILLISECONDS)
                         .authenticator((route, response) -> {
                             String username = context.getSettings().getUsername();
                             String password = context.getSettings().getPassword();
@@ -34,11 +50,16 @@ public class HttpUtils {
                             }
 
                             String authData = Credentials.basic(username, password);
-                            return response.request().newBuilder().header("Authorization", authData).build();
+                            return response.request()
+                                    .newBuilder()
+                                    .header("Authorization", authData)
+                                    .header("Host", finalHost == null ? "" : finalHost)
+                                    .build();
                         })
                         .build();
 
                 Request request = new Request.Builder()
+                        .header("Host", finalHost == null ? "" : finalHost)
                         .url(url)
                         .build();
 
@@ -79,7 +100,7 @@ public class HttpUtils {
         }
 
         return new Response.Builder()
-                .protocol(Protocol.HTTP_1_0)
+                .protocol(Protocol.HTTP_1_1)
                 .message("")
                 .request(runnable.responseRequest.get())
                 .code(runnable.responseCode.get())

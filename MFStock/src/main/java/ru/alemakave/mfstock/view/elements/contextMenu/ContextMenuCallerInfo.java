@@ -1,4 +1,4 @@
-package ru.alemakave.mfstock.elements.contextMenu;
+package ru.alemakave.mfstock.view.elements.contextMenu;
 
 import android.view.ContextMenu;
 import android.view.View;

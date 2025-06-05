@@ -2,11 +2,21 @@
     <string name="app_name" translatable="false">MFStock</string>
     <string name="scanned">Scanned</string>
     <string name="scanned_not_found">Scanned not found</string>
-    <string name="print_sticker"></string>
-    <string name="print_sticker_message">Which sticker to print according to the following data?</string>
-    <string name="nomenclature_sticker">Nomenclature sticker</string>
-    <string name="serial_number_sticker">Serial number sticker</string>
     <string name="cancel">Cancel</string>
     <string name="application_info" translatable="false">MFStock v%s%s\nDB date: %s</string>
     <string name="save">Save</string>
+    <string name="scan_input_box_hint_text">Search…</string>
+    <string name="not_connected">Not connected</string>
+    <string name="connection_error">Connection error</string>
+    <string name="copied">Copied</string>
+    <string name="copied_empty_error">Copied error!\nValue: \"%s\" is empty</string>
+    <string name="host">Host</string>
+    <string name="port">Port</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="font_size">Font Size</string>
+    <string name="preffix">Preffix</string>
+    <string name="suffix">Suffix</string>
+    <string name="connection_timeout">Conntection timeout (ms)</string>
+    <string name="empty_header">Empty Header</string>
 </resources>

@@ -2,10 +2,20 @@
 <resources>
     <string name="scanned">Просканировано</string>
     <string name="scanned_not_found">Просканированное не найдено</string>
-    <string name="print_sticker"></string>
-    <string name="print_sticker_message">Какую распечатать наклейку по следующим данным?</string>
-    <string name="nomenclature_sticker">Наклейка с номенклатурой</string>
-    <string name="serial_number_sticker">Наклейка с СНИ</string>
     <string name="cancel">Отмена</string>
     <string name="save">Сохранить</string>
+    <string name="scan_input_box_hint_text">Поиск...</string>
+    <string name="not_connected">Нет подключения</string>
+    <string name="connection_error">Ошибка подключения</string>
+    <string name="copied">Скопированно</string>
+    <string name="copied_empty_error">Ошибка при копировании.\nЗначение \"%s\" пустое.</string>
+    <string name="host">Хост</string>
+    <string name="port">Порт</string>
+    <string name="username">Имя пользователя</string>
+    <string name="password">Пароль</string>
+    <string name="font_size">Размер шрифта</string>
+    <string name="preffix">Префикс</string>
+    <string name="suffix">Суфикс</string>
+    <string name="connection_timeout">Таймаут соединения (мс)</string>
+    <string name="empty_header">Пустой заголовок</string>
 </resources>

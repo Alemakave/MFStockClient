@@ -1,10 +1,11 @@
 plugins {
     id 'com.android.application'
+    id("de.mannodermaus.android-junit5") version "1.12.2.0"
 }
 
 ext.VERSION_MAGOR = 0
 ext.VERSION_MINOR = 1
-ext.VERSION_BUILD = 3
+ext.VERSION_BUILD = 5
 
 android {
     namespace = "ru.alemakave.mfstock"
@@ -35,6 +36,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             manifestPlaceholders = [ appName: "MFStock Debug" ]
+            sourceSets.main.java.srcDir "$buildDir/generated/sources/debug/src/main/java"
         }
         release {
             minifyEnabled false
@@ -43,26 +45,81 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
+tasks.register('generateDebugBuildInfoClass') {
+    var outputDir = file("$buildDir/generated/sources/debug/src/main/java/ru/alemakave/mfstock")
+    outputs.dir outputDir
+    doLast {
+        outputDir.exists() || outputDir.mkdirs()
+
+        new File(outputDir, "BuildInfo.java").write(
+                "package ru.alemakave.mfstock;\n\n" +
+                        "public class BuildInfo {\n" +
+                        "    public static final boolean DEBUG = true;\n" +
+                        "    public static final int VERSION_MAGOR = " + VERSION_MAGOR + ";\n" +
+                        "    public static final int VERSION_MINOR = " + VERSION_MINOR + ";\n" +
+                        "    public static final int VERSION_BUILD = " + VERSION_BUILD + ";\n" +
+                        "    public static final int VERSION_CODE = ((VERSION_MAGOR << 8) + (VERSION_MINOR << 4) + VERSION_BUILD);\n" +
+                        "    public static final String VERSION_NAME = String.format(\"%d.%d.%d-ALPHA\", VERSION_MAGOR, VERSION_MINOR, VERSION_BUILD);\n" +
+                        "}")
+    }
+}
+
+tasks.register('generateReleaseBuildInfoClass') {
+    var outputDir = file("$buildDir/generated/sources/release/src/main/java/ru/alemakave/mfstock")
+    outputs.dir outputDir
+    doLast {
+        outputDir.exists() || outputDir.mkdirs()
+
+        new File(outputDir, "BuildInfo.java").write(
+                "package ru.alemakave.mfstock;\n\n" +
+                        "public class BuildInfo {\n" +
+                        "    public static final boolean DEBUG = false;\n" +
+                        "    public static final int VERSION_MAGOR = " + VERSION_MAGOR + ";\n" +
+                        "    public static final int VERSION_MINOR = " + VERSION_MINOR + ";\n" +
+                        "    public static final int VERSION_BUILD = " + VERSION_BUILD + ";\n" +
+                        "    public static final int VERSION_CODE = ((VERSION_MAGOR << 8) + (VERSION_MINOR << 4) + VERSION_BUILD);\n" +
+                        "    public static final String VERSION_NAME = String.format(\"%d.%d.%d-ALPHA\", VERSION_MAGOR, VERSION_MINOR, VERSION_BUILD);\n" +
+                        "}")
+    }
+}
+
+tasks.forEach {action -> println action}
+
+preBuild.dependsOn generateDebugBuildInfoClass
+preBuild.dependsOn generateReleaseBuildInfoClass
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.6.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.9.0'
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.12.13'
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: "2.10.5"
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: "2.10.5"
     implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: "2.10.5"
 
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
 
-    testImplementation 'junit:junit:4.+'
+
+    // Tests
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.2")
+    // (Optional) If you need "Parameterized Tests"
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.2")
+
+    // (Optional) If you also have JUnit 4-based tests
+    testImplementation("junit:junit:4.13.2")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.12.2")
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

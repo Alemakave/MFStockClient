@@ -1,4 +1,4 @@
-package ru.alemakave.mfstock.elements;
+package ru.alemakave.mfstock.view.elements;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -34,7 +34,7 @@ public class HeadedTextBox extends LinearLayout {
         setBackgroundColor(Color.rgb(32, 32, 32));
 
         header = new TextView(context);
-        header.setText("Empty Header");
+        header.setText(context.getText(R.string.empty_header));
         header.setTextAlignment(TEXT_ALIGNMENT_CENTER);
 
         input = new EditText(context);
@@ -54,6 +54,7 @@ public class HeadedTextBox extends LinearLayout {
     @SuppressLint("NonConstantResourceId")
     private void readLayoutAttributes(Context context, AttributeSet attrs, int defStyleAttr) {
         TypedArray attributes = context.getTheme().obtainStyledAttributes(attrs, R.styleable.HeadedTextBox, defStyleAttr, 0);
+
         for (int i = 0; i < attributes.getIndexCount(); i++) {
             int attr = attributes.getIndex(i);
             if (attr == R.styleable.HeadedTextBox_header) {
@@ -64,5 +65,7 @@ public class HeadedTextBox extends LinearLayout {
                 input.setText(attributes.getString(attr));
             }
         }
+
+        attributes.close();
     }
 }

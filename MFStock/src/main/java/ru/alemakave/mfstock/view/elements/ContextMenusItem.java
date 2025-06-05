@@ -1,4 +1,4 @@
-package ru.alemakave.mfstock.elements;
+package ru.alemakave.mfstock.view.elements;
 
 import android.view.MenuItem;
 

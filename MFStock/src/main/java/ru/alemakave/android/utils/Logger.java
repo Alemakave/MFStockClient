@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import androidx.appcompat.app.AlertDialog;
-import ru.alemakave.mfstock.BuildConfig;
+import ru.alemakave.mfstock.BuildInfo;
 import ru.alemakave.mfstock.R;
 
 public final class Logger {
@@ -47,13 +47,13 @@ public final class Logger {
      * @param msg The message you would like logged.
      */
     public static void i(String tag, String msg) {
-        if (BuildConfig.DEBUG) {
+        if (BuildInfo.DEBUG) {
             Log.i(tag, msg == null ? "null" : msg);
         }
     }
 
     public static void e(String tag, String msg) {
-        if (BuildConfig.DEBUG) {
+        if (BuildInfo.DEBUG) {
             Log.e(tag, msg == null ? "null" : msg);
         }
     }
